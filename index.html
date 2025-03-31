@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flashcards</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .flashcard-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .flashcard {
+      width: 400px;
+      min-height: 200px;
+      margin: 10px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      min-height: 100%;
+      text-align: left;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .flashcard.flipped .flashcard-inner {
+      transform: rotateY(180deg);
+    }
+    .flashcard-face {
+      position: absolute;
+      width: 100%;
+      min-height: 100%;
+      padding: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+      backface-visibility: hidden;
+      white-space: pre-wrap;
+    }
+    .flashcard-back {
+      background: #f0f0f0;
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+  <h1>Multiple Choice Flashcards</h1>
+  <div class="flashcard-container" id="flashcardContainer"></div>
+
+  <script>
+    // Each object below represents one flashcard.
+    // The "question" property holds all the text up to "ANS:" and the "answer" property holds the text after.
+    const flashcards = [
+      {
+        question: "66. Which of the following was not true of the changing nature of work in the 1950s?\na. Science and technology drove economic growth.\nb. There were fewer jobs in the military-related aerospace industry.\nc. White collar workers were surpassing blue collar workers in numbers.\nd. Labor unions reached a peak and then began to decline.\ne. Job opportunities were opening to women in the white collar work force.",
+        answer: "B REF: p. 860"
+      },
+      {
+        question: "67. After World War II ended, most American women\na. held part-time jobs in relatively poorly paid occupations.\nb. cared for their families and did not work outside the home.\nc. pressed for full equality in the workplace.\nd. worked full time outside the home.\ne. pursued college education or formal job training.",
+        answer: "B REF: p. 861"
+      },
+      {
+        question: "68. The vast expansion of employment opportunities for women in the 1950s\na. led to the advent of the \"pink collar ghetto\" of occupations.\nb. created a dual role for women as homemakers and workers.\nc. fueled a social revolution that raised questions about gender roles.\nd. All of these\ne. None of these",
+        answer: "D REF: p. 861"
+      },
+      {
+        question: "69. The 1963 best-seller The Feminine Mystique\na. is often credited with inspiring the modern women's movement.\nb. spoke to working women struggling against being labeled as \"unfeminine.\"\nc. appealed to educated women who felt bored by the limitations of the housewife role.\nd. None of these\ne. All of these",
+        answer: "E REF: p. 861-862"
+      },
+      {
+        question: "70. The impact of mass media on religion was reflected in the rise of religious televangelists like\na. Joseph McCarthy and Richard Nixon.\nb. Betty Friedan and Josephine Baker.\nc. David Riesman and John Kenneth Galbraith.\nd. Jackie Robinson and Paul Robeson.\ne. Billy Graham and Oral Roberts.",
+        answer: "E REF: p. 863"
+      },
+      {
+        question: "71. The fundamental criticism directed against the new popular mass media culture in the 1950s, by such social critics as David Riesman and William H. Whyte,Jr., was that\na. affluence tended to erode Americans' moral character.\nb. Americans had become affluent conformists unable to think for themselves.\nc. the wealth produced by the new mass economy was unevenly distributed.\nd. the open sexual displays of figures like Elvis Presley and Marilyn Monroe were morally dangerous.\ne. Americans were becoming too soft to be able to fight the Cold War effectively.",
+        answer: "B REF: p. 864"
+      },
+      {
+        question: "72. Which of these were NOT among the aspects of 1950s popular culture that conservatives found troubling?\na. Rock 'n roll music\nb. Elvis Presley\nc. Marilyn Monroe\nd. Playboy magazine\ne. Novels such as The Man in the Gray Flannel Suit",
+        answer: "E REF: p. 863-864"
+      },
+      {
+        question: "73. Richard Nixon was selected as Dwight Eisenhower's vice-presidential running mate in 1952 as a concession to the\na. isolationists.\nb. liberal Republicans.\nc. hard-line anticommunists.\nd. moderate Republicans.\ne. southern Republicans.",
+        answer: "C REF: p. 864"
+      },
+      {
+        question: "74. Richard Nixon's Checkers speech, during the 1952 presidential campaign\na. was an eloquent appeal that demonstrated Nixon's ethical seriousness.\nb. demonstrated the new power of television and kept him on the Republican ticket.\nc. won Nixon enormous support among American animal lovers.\nd. led Dwight Eisenhower to tone down Nixon's attacks on Democrats for being soft on Communism.\ne. proved that Nixon had the political skills and leadership to become president if necessary.",
+        answer: "B REF: p. 864"
+      },
+      {
+        question: "75. During the 1952 presidential campaign, Republican candidate Dwight Eisenhower declared that he would ____ to help to end the Korean War.\na. use atomic weapons\nb. blockade the China coast and bomb Manchuria\nc. open negotiations with Mao Zedong\nd. order United Nations troops to invade North Korea\ne. personally go to Korea",
+        answer: "E REF: p. 865"
+      },
+      {
+        question: "76. In terms of politics, television did all of the following except\na. threaten the traditional role of political parties.\nb. apply the standards of show business and commercialism to political messages.\nc. enable political parties to continue their role of educating and mobilizing the electorate.\nd. allow politicians to address voters directly.\ne. encourage reliance on short slogans and sound bites.",
+        answer: "C REF: p. 864-865"
+      },
+      {
+        question: "77. Dwight Eisenhower's greatest asset as president was his\na. vast military experience.\nb. willingness to take a partisan stand.\nc. commitment to social justice.\nd. willingness to involve himself in rough campaigning.\ne. enjoyment of the affection and respect of the American people.",
+        answer: "E REF: p. 865"
+      },
+      {
+        question: "78. Among anticommunists, Senator Joseph R. McCarthy was the\na. most effective.\nb. first Republican.\nc. only true World War II hero.\nd. one who most damaged free speech and fair play.\ne. one who organized a national movement.",
+        answer: "D REF: p. 866"
+      },
+      {
+        question: "79. The record would seem to indicate that President Eisenhower's strongest commitment during his presidency was to\na. social justice.\nb. social harmony.\nc. party loyalty.\nd. racial desegregation.\ne. political reform.",
+        answer: "B REF: p. 866"
+      },
+      {
+        question: "80. In response to Senator Joseph McCarthy's anticommunist attacks, President Eisenhower\na. publicly denounced him only after he attacked General George Marshall.\nb. quietly encouraged him to continue his attacks on Democrats.\nc. publicly opposed his ruthless tactics but privately enjoyed his personal charm.\nd. effectively allowed him to control personnel policy at the State Department.\ne. privately supported him but publicly kept his distance.",
+        answer: "D REF: p. 866"
+      },
+      {
+        question: "81. Senator Joseph McCarthy first rose to national prominence by\na. revealing that communist spies were passing atomic secrets to the Soviet Union.\nb. charging that there was extensive communist influence in Hollywood and the media.\nc. asserting that General George Marshall was part of a vast communist conspiracy within the U.S. Army.\nd. mobilizing Republicans to demand a stronger anticommunist foreign policy in East Asia.\ne. charging that dozens of known communists were working within the U.S. State Department.",
+        answer: "E REF: p. 866"
+      },
+      {
+        question: "82. As a result of Senator McCarthy's crusade against communist subversion in America\na. the FBI was shown to have had several spies working as communist agents.\nb. the United States Army was forced to give dishonorable discharges to more than one hundred officers.\nc. the State Department lost a number of Asian specialists who might have counseled a wiser course in Vietnam.\nd. Eisenhower nearly lost the Republican presidential nomination in 1956.\ne. the United States achieved a stronger settlement in Korea.",
+        answer: "C REF: p. 866"
+      },
+      {
+        question: "83. Senator McCarthy's anticommunist crusade ended when he\na. began to attack the personal integrity of General George C. Marshall.\nb. alleged that there were communists in Hollywood.\nc. alleged that there were communists in the Foreign Service.\nd. alleged that many college professors were communists.\ne. attacked the United States Army for allegedly sheltering communists.",
+        answer: "E REF: p. 867"
+      },
+      {
+        question: "84. The new militancy and restlessness among many members of the African American community after 1945 was especially generated by\na. the growing moral criticism of segregation by white church leaders.\nb. blacks' increasing awareness during and after the war of the gap between American democratic ideals and racial practices.\nc. the appointment of Thurgood Marshall, chief legal counsel of the NAACP, to the Supreme Court.\nd. Dwight Eisenhower's commitment to civil rights.\ne. the agitation of A. Philip Randolph.",
+        answer: "B REF: p. 871"
+      },
+      {
+        question: "85. In an effort to overturn Jim Crow laws and the segregated system that they had created, African Americans used all of the following methods except\na. economic boycotts.\nb. legal attacks on the underpinnings of segregation in the courts.\nc. appeals to foreign governments to pressure the United States to establish racial justice.\nd. mobilization of black churches on behalf of black rights.\ne. use of the nonviolent tactics of Mohandas Gandhi.",
+        answer: "C REF: p. 868-869"
+      },
+      {
+        question: "86. When singer Paul Robeson began to criticize American racial policies in Europe\na. Robeson's career took off.\nb. conservative elements in Europe became more sympathetic to southern racial practices.\nc. the State Department revoked Robeson's passport.\nd. the government sent Frank Sinatra to Europe to defend American policies.\ne. Robeson decided to become a French citizen.",
+        answer: "C REF: p. 868"
+      },
+      {
+        question: "87. Swedish writer Gunnar Myrdal's An American Dilemma essentially argued that\na. altering racial segregation would create great problems for America's neighborhoods and schools.\nb. the divisions over race might well lead to a new North-South conflict.\nc. the civil rights movement was bound to overturn segregation.\nd. the United States would become a more and more racist society.\ne. America's racial segregation was a hypocritical contradiction of its democratic ideals.",
+        answer: "E REF: p. 868"
+      },
+      {
+        question: "88. The Supreme Court began to advance the cause of civil rights in the 1950s because\na. the Court was the only branch of government with the constitutional authority to do so.\nb. the courts were dominated by New Deal liberals.\nc. President Eisenhower had requested the Court's assistance.\nd. Congress and the presidency had largely abdicated their responsibilities by keeping hands off the issue.\ne. the Constitution clearly prohibited any segregation.",
+        answer: "D REF: p. 868"
+      },
+      {
+        question: "89. In the epochal 1954 decision in Brown v. Board of Education of Topeka, the Supreme Court\na. declared that the concept of \"separate but equal\" facilities for blacks and whites was unconstitutional.\nb. upheld its earlier decision in Plessy v. Ferguson.\nc. rejected desegregation.\nd. supported the \"Declaration of Constitutional Principles\" issued by Congress.\ne. ordered immediate and total integration of all American schools.",
+        answer: "A REF: p. 868"
+      },
+      {
+        question: "90. The 1954 Supreme Court case that ruled racially segregated school systems inherently unequal was\na. Roe v. Wade.\nb. Plessy v. Ferguson.\nc. Sweatt v. Painter.\nd. Johnson v. Little Rock School District.\ne. Brown v. Board of Education.",
+        answer: "E REF: p. 868"
+      },
+      {
+        question: "91. On the subject of racial justice, President Eisenhower\na. had demanded the integration of the armed forces as early as 1948.\nb. publicly endorsed the 1954 Supreme Court school-desegregation decision.\nc. vetoed the Civil Rights Act of 1957.\nd. had advised against integrating the armed forces.\ne. admired the Christian philosophy of Martin Luther King.",
+        answer: "D REF: p. 869"
+      },
+      {
+        question: "92. The Student Nonviolent Coordinating Committee (SNCC) was an outgrowth of the\na. antiwar movement of the 1960s.\nb. black power movement of the 1960s.\nc. ban-the-bomb movement of the 1950s.\nd. Civil Rights Act of 1957.\ne. sit-in movement launched by young southern blacks.",
+        answer: "E REF: p. 872"
+      },
+      {
+        question: "93. As president, Dwight Eisenhower supported\na. putting the brakes on military spending.\nb. the abolition of the Social Security system.\nc. the dismissal of his secretary of health, education, and welfare for condemning free distribution on the Salk polio vaccine as socialized medicine.\nd. the continuation of the Tennessee Valley Authority.\ne. a stronger voice for organized labor.",
+        answer: "A REF: p. 872 | p. 874"
+      },
+      {
+        question: "94. President Eisenhower defined the domestic philosophy of his administration as\na. the Fair Deal.\nb. the silent majority.\nc. dynamic conservatism.\nd. two cars in every garage.\ne. compassionate conservatism.",
+        answer: "C REF: p. 872"
+      },
+      {
+        question: "95. Dwight Eisenhower's policies toward Native Americans included\na. efforts at tribal preservation.\nb. the establishment of tribes as legal entities.\nc. incentives for tribes to hold onto their land.\nd. a return to the assimilation goals of the Dawes Severalty Act of 1887.\ne. an emphasis on education and job training for Indians.",
+        answer: "D REF: p. 873"
+      },
+      {
+        question: "96. The Eisenhower-promoted public works project that was far larger and more expensive than anything in Roosevelt's New Deal was the\na. interstate highway system.\nb. Grand Coulee dam project.\nc. St. Lawrence seaway.\nd. airport construction program.\ne. public housing system.",
+        answer: "A REF: p. 873"
+      },
+      {
+        question: "97. During his presidency, Dwight Eisenhower accepted the principle and extended the benefits of\na. federal health care programs.\nb. the Tennessee Valley Authority.\nc. deficit spending.\nd. racial equality.\ne. the Social Security system.",
+        answer: "E REF: p. 873"
+      },
+      {
+        question: "98. As a part of his New Look foreign policy, President Eisenhower\na. sought an alliance with China.\nb. refused to talk with leaders of the Soviet Union.\nc. called for open skies over both the United States and the Soviet Union.\nd. sent help to the Hungarian freedom fighters.\ne. allied with Israel against the Arab states.",
+        answer: "C REF: p. 874"
+      },
+      {
+        question: "99. As the French fortress of Dien Bien Phu was about to fall to Ho Chi Minh's communist forces in 1954, President Eisenhower\na. agreed to send small military units to aid the French.\nb. relied on the advice of Vice President Nixon and Secretary of State Dulles.\nc. sought a compromise settlement at Geneva.\nd. refused to permit any American military involvement.\ne. threatened nuclear attack on the Vietnamese communists.",
+        answer: "D REF: p. 875"
+      },
+      {
+        question: "100. President Eisenhower's vehemently anticommunist secretary of state, through most of his two administrations, was\na. John Bricker.\nb. John Foster Dulles.\nc. Christian Herter.\nd. Dean Acheson.\ne. George C. Marshall.",
+        answer: "B REF: p. 874 | p. 875"
+      },
+      {
+        question: "101. The basic military strategy of Eisenhower's and Dulles's New Look foreign policy in the 1950s aimed at\na. the dismantling of the military-industrial complex.\nb. massive new military spending.\nc. greater reliance on air power and the deterrent power of nuclear weapons than on the army and navy.\nd. a buildup of unconventional and guerrilla-warfare forces.\ne. the rapid deployment of the navy and marines to trouble spots.",
+        answer: "C REF: p. 874"
+      },
+      {
+        question: "102. In 1956, when Hungary revolted against continued domination by the Soviet Union, the United States under Dwight Eisenhower\na. sent money to the rebels.\nb. quickly recognized the new Hungarian government.\nc. refused to admit any Hungarian refugees.\nd. gave only outdated military equipment to the Hungarian freedom fighters.\ne. did nothing to help to defeat the communists.",
+        answer: "E REF: p. 874"
+      },
+      {
+        question: "103. The leader of the nationalist movement in Vietnam since World War I was\na. Mao Zedong (Mao Tse-tung).\nb. Ngo Dinh Diem.\nc. Dienbienphu.\nd. Ho Chi Minh.\ne. Nguyen Cao Ky.",
+        answer: "D REF: p. 874"
+      },
+      {
+        question: "104. The 1955 Geneva Conference\na. unified the two Vietnams.\nb. made Ngo Dinh Diem president of Vietnam.\nc. called for the two Vietnams to hold national elections within two years.\nd. created the Southeast Asia Treaty Organization.\ne. established a permanent division of Vietnam.",
+        answer: "C REF: p. 875"
+      },
+      {
+        question: "105. In response to a supposed Soviet threat to Middle Eastern oil, the American Central Intelligence Agency in 1953\na. began seeking alternative sources of energy.\nb. staged a coup to overthrow the Iranian government and install Shah Mohammed Reza Pahlevi as dictator-like monarch.\nc. engaged in sabotage against pro-Soviet governments in the region.\nd. developed close cooperation with Israeli intelligence agencies.\ne. gathered conclusive evidence of the Soviets' plans to control Egypt.",
+        answer: "B REF: p. 875"
+      },
+      {
+        question: "106. In 1956, the United States condemned ____ as the aggressors in the Suez Canal crisis.\na. Egypt and Jordan\nb. the Soviet Union and Warsaw Pact members\nc. Israel and Turkey\nd. Lebanon and Syria\ne. Britain and France",
+        answer: "E REF: p. 875-876"
+      },
+      {
+        question: "107. During the 1950s, the Central Intelligence Agency engineered pro-American political coups in both\na. Iran and Guatemala.\nb. Iraq and Nicaragua.\nc. Lebanon and El Salvador.\nd. Libya and Costa Rica.\ne. Egypt and Cuba.",
+        answer: "A REF: p. 875 | p. 878"
+      },
+      {
+        question: "108. The Suez crisis marked the last time in history that the United States could\na. use the threat of nuclear war to win concessions.\nb. criticize Israel's foreign policy.\nc. condemn its allies for their actions in the Middle East.\nd. invoke the Eisenhower Doctrine.\ne. use its oil weapon to make foreign policy demands.",
+        answer: "E REF: p. 876"
+      },
+      {
+        question: "109. The 1957 Eisenhower Doctrine empowered the president to extend economic and military aid to nations of ____ that wanted help to resist communist aggression.\na. Southeast Asia\nb. Africa\nc. Central and Eastern Europe\nd. the Middle East\ne. Latin America",
+        answer: "D REF: p. 876"
+      },
+      {
+        question: "110. During his second term, President Eisenhower\na. no longer trusted his vice president, Richard Nixon, to lend assistance.\nb. hoped that he would be able to win a third term.\nc. took a more active personal role in governing.\nd. believed that the civil rights movement needed his personal involvement if it were to succeed.\ne. recognized that only he had the experience to deal with the Soviets.",
+        answer: "C REF: p. 877"
+      },
+      {
+        question: "111. In response to the launching of Sputnik by the Soviet Union in 1957\na. Harry Truman condemned the Republicans for allowing a scientific gap to occur.\nb. the federal government began spending billions of dollars to improve American science and language education.\nc. the United States spent nearly a decade trying to equal this achievement.\nd. the Republican party took responsibility for the fact that the United States had fallen behind the Soviets in this area of scientific discovery.\ne. scientists blamed America's slowness on poor math and science education in the schools.",
+        answer: "B REF: p. 877"
+      },
+      {
+        question: "112. The Paris summit conference, scheduled for 1960, collapsed because of the\na. Suez crisis.\nb. Bay of Pigs.\nc. Quemoy episode.\nd. launching of Sputnik.\ne. U-2 incident.",
+        answer: "E REF: p. 878"
+      },
+      {
+        question: "113. By the end of the 1950s, Latin American anger toward the United States had intensified because Washington had done all of the following except\na. extend massive aid to Europe and little to Latin America.\nb. continue to intervene in Latin American affairs.\nc. support bloody dictators who claimed to be fighting communism.\nd. provide encouragement to Fidel Castro's communist government in Cuba.\ne. sponsored the CIA-directed coup in Guatemala.",
+        answer: "D REF: p. 878"
+      },
+      {
+        question: "114. The factor that may well have tipped the electoral scales for John F. Kennedy in the presidential election of 1960 was\na. his age.\nb. his religion.\nc. his televised debates with Richard M. Nixon.\nd. President Eisenhower's heavy loss of popularity in his last two years in office.\ne. his family.",
+        answer: "C REF: p. 879"
+      },
+      {
+        question: "115. When Dwight Eisenhower left the presidency in 1961\na. it was noted that his second term had produced little of value, since he was a \"lame duck.\"\nb. Congress was firmly in the hands of the Republicans.\nc. he was unhappy with Vice President Nixon's unbending anticommunism.\nd. he had clearly lost control of the Democratic-dominated Congress.\ne. he remained an extraordinarily popular figure.",
+        answer: "E REF: p. 880"
+      },
+      {
+        question: "116. Two postwar American fiction writers, who explored the problems and anxieties of affluence, were\na. John Updike and John Cheever.\nb. Joseph Heller and Kurt Vonnegut.\nc. Tennessee Williams and Arthur Miller.\nd. Ralph Ellison and James Baldwin.\ne. Eudora Welty and Flannery O'Connor.",
+        answer: "A REF: p. 883"
+      },
+      {
+        question: "117. The title of Ralph Ellison's novel Invisible Man refers to a(n)\na. anticommunist agent who is forced to live underground.\nb. World War II bomber pilot who is ignored upon his return home.\nc. victim of nuclear testing who is dying of radiation.\nd. father who is disrespected by his family.\ne. African American whose supposed supporters are unable to see him as a real man.",
+        answer: "E REF: p. 886"
+      },
+      {
+        question: "118. Compared to World War I, the literary outpouring after World War II tended to be\n a. more focused on realistic portrayals of war.\nb. less focused on realistic portrayals of war.\nc. more simplistic.\nd. less realistic.\ne. less confessional in tone.",
+        answer: "B REF: p. 883"
+      },
+      {
+        question: "119. Some of the better-known American poets in the post-World War II era\n a. actually produced second-rate verse.\nb. consisted mainly of those who wrote before the war.\nc. ended their lives through suicide.\nd. left the country to live in Paris.\ne. turned to nature for subject matter.",
+        answer: "C REF: p. 883"
+      },
+      {
+        question: "120. The Beat Generation can be described in all of the following ways except\na. they formed the protest culture of the late 1950s and early 1960s.\nb. they promoted interest in bebop jazz and Eastern religious mysticism.\nc. in founding their own movement, the hippies later rejected many of the Beat notions.\nd. they embraced sexual liberation.\ne. their name came from the term \"beatnik,\" meant as a Cold War insult.",
+        answer: "C REF: p. 885"
+      },
+      {
+        question: "56. When he became attorney general, Robert Kennedy sought to refocus the attention of the FBI on\na. organized crime and civil rights.\nb. communist spies and terrorism.\nc. political corruption and campaign law violations.\nd. illegal immigration and drug trading.\ne. automobile theft and illegal weapons.",
+        answer: "A REF: p. 889"
+      },
+      {
+        question: "57. When he took office in 1961, President Kennedy chose to try to stimulate the sluggish economy through\na. a massive foreign-aid program.\nb. large-scale government spending programs.\nc. a tax cut.\nd. reducing expenditures on the space program.\ne. a looser monetary policy.",
+        answer: "C REF: p. 890"
+      },
+      {
+        question: "58. Kennedy was often cautious and frustrated in advancing social reform and civil rights legislation because\na. he was looking forward to winning a much larger mandate in the election of 1964.\nb. the civil rights movement's militant demands undercut public support for moderate reform.\nc. his own vice president, Lyndon Johnson, lobbied against the legislation behind his back.\nd. conservative southern Democrats controlled key Congressional committees.\ne. Republican majorities in the Senate blocked his legislative proposals.",
+        answer: "D REF: p. 890"
+      },
+      {
+        question: "59. President Kennedy's most bitter confrontation with big business occurred when he\na. raised taxes on corporate business profits.\nb. refused to support compensation for American businesses' lost investments in Cuba.\nc. demanded that the American oil industry stop driving up the price of gasoline.\nd. forced steel industry leaders to roll back steel price increases.\ne. lowered tariff rates to permit more European imports into the United States.",
+        answer: "D REF: p. 890"
+      },
+      {
+        question: "60. The essential purpose of President Kennedy's promise to land a man on the moon by the end of the 1960s was to\n a. restore American prestige in the space race damaged by the Soviets' Sputnik.\nb. develop the possibility of deploying American weapons in outer space.\nc. engage in scientific and astronomical study of the moon and the solar system.\nd. provide investments and jobs in the key states of Texas and Florida.\ne. use the space program to develop new technologies in electronics and other areas.",
+        answer: "A REF: p. 890"
+      },
+      {
+        question: "61. The 1962 Trade Expansion Act\n a. cut taxes to increase American purchasing power.\nb. provided incentives to American overseas investments.\nc. made the United States a member of the Common Market.\nd. raised the minimum-wage and Social Security benefits of most working-class Americans.\ne. reduced American tariffs.",
+        answer: "E REF: p. 891"
+      },
+      {
+        question: "62. John F. Kennedy's strategy of flexible response\n a. was an updated version of John Foster Dulles's doctrine of massive retaliation.\nb. was used in his battle with the leadership of the steel industry.\nc. called for a variety of military options that could be matched to the scope and importance of a crisis.\nd. required increased spending on a variety of nuclear weapons systems to be deployed around the world.\ne. cut back nuclear weapons in favor of guerrilla forces.",
+        answer: "C REF: p. 892"
+      },
+      {
+        question: "63. American military forces entered Vietnam in order to\n a. try to drive the communists out of North Vietnam.\nb. help to stage a coup against Ngo Dinh Diem.\nc. prevent Ngo Dinh Diem's regime from falling to the communists.\nd. establish defensive perimeters around Saigon and other Vietnamese cities.\ne. promote democratic reforms in South Vietnam.",
+        answer: "C REF: p. 893"
+      },
+      {
+        question: "64. The Alliance for Progress, which intended to improve economic growth and democratic reforms in Latin America, was\n a. effectively implemented by American Peace Corps volunteers.\nb. effective economically but ineffective in developing pro-American sentiment in the region.\nc. generally disappointing.\nd. weakened by the Kennedy administration's harsh policies toward Cuba.\ne. an incentive for growing Soviet intervention in the region.",
+        answer: "C REF: p. 893"
+      },
+      {
+        question: "65. The Bay of Pigs invasion failed when\n a. the Cuban rebel forces lost the Battle of Havana.\nb. the anti-Castro exiles were defeated by the Cuban military.\nc. the Soviet Union intervened to protect the Castro government.\nd. President Kennedy's use of U.S. air power led to the capture of American pilots.\ne. anti-Castro Cubans in Florida refused to support the effort.",
+        answer: "B REF: p. 893-894"
+      },
+      {
+        question: "66. When the Soviet Union attempted to install nuclear weapons in Cuba, President Kennedy ordered\n a. the installation of nuclear weapons in Turkey.\nb. surgical air strikes against the missile sites.\nc. the invasion of Cuba at the Bay of Pigs.\nd. resumption of atmospheric testing of nuclear weapons.\ne. a naval quarantine of that island.",
+        answer: "E REF: p. 895"
+      },
+      {
+        question: "67. The Cuban missile crisis resulted in all of the following except\n a. U.S. agreement to abandon the American base at Guantanamo.\nb. the removal of Nikita Khrushchev from power in the Soviet Union.\nc. a U.S. promise not to invade Cuba.\nd. an ambitious program of military expansion by the Soviet Union.\ne. withdrawal of U.S. missiles in Turkey.",
+        answer: "A REF: p. 895"
+      },
+      {
+        question: "68. In a speech at American University in 1963, President Kennedy recommended the adoption of a policy toward the Soviet Union based on\n a. flexible response.\nb. massive retaliation.\nc. peaceful coexistence.\nd. gradual escalation.\ne. containment.",
+        answer: "C REF: p. 895"
+      },
+      {
+        question: "69. At first, John F. Kennedy moved very slowly in the area of racial justice because he\n a. did not support civil rights.\nb. needed the support of southern legislators to pass his economic and social legislation.\nc. had not pledged any action in this area during his campaign.\nd. believed that initiatives in this area should come from the Supreme Court and Congress.\ne. was suspicious of Martin Luther King.",
+        answer: "B REF: p. 896"
+      },
+      {
+        question: "70. The Freedom Riders\n a. protested segregation by torching buses on segregated routes.\nb. sought to end segregation in facilities serving interstate bus passengers.\nc. were involved in the sit-ins across the South to end segregation.\nd. were African Americans who sought to integrate public school buses.\ne. None of these",
+        answer: "B REF: p. 896"
+      },
+      {
+        question: "71. President John Kennedy and Attorney General Robert Kennedy began to join hands with the civil rights movement when they\n a. sent federal marshals to protect the Freedom Riders.\nb. ordered the FBI to remove the wiretap from Martin Luther King, Jr.'s phone.\nc. secured passage of the Voting Rights Act.\nd. journeyed south to support the registration of black voters.\ne. ordered the immediate desegregation of schools.",
+        answer: "A REF: p. 896"
+      },
+      {
+        question: "72. President Kennedy ordered hundreds of federal marshals and thousands of federal troops to force the racial integration of\n a. Central High School in Little Rock, Arkansas.\nb. Louisiana State University.\nc. the lunch counters of Greensboro, North Carolina.\nd. the bus stations in Birmingham, Alabama.\ne. the University of Mississippi.",
+        answer: "E REF: p. 896"
+      },
+      {
+        question: "73. American and world public opinion turned strongly in favor of the civil rights movement when\n a. Senator Barry Goldwater came out in favor of the civil rights bill.\nb. Martin Luther King led a successful nonviolent march from Selma to Montgomery, Alabama.\nc. J. Edgar Hoover's wiretaps on Martin Luther King were exposed.\nd. Martin Luther King's peaceful demonstrators were viciously attacked in Birmingham.\ne. Martin Luther King met with President Kennedy at the White House.",
+        answer: "D REF: p. 896-897"
+      },
+      {
+        question: "74. The 1963 March on Washington led by Martin Luther King, Jr., provided critical support for\n a. the War on Poverty.\nb. the Democratic party.\nc. the Voting Rights bill.\nd. the civil rights bill to end segregation.\ne. jobs and medicare.",
+        answer: "D REF: p. 897"
+      },
+      {
+        question: "75. During the 1963 March on Washington, Martin Luther King, Jr., delivered his famous \"I Have A Dream Speech,\" in which he proclaimed\n a. that blacks would become more militant if their rights were not secured.\nb. that a black man would one day be president.\nc. that his children would one day live in a nation where they will not be judged by the color of their skin.\nd. All of these\ne. None of these",
+        answer: "C REF: p. 897"
+      },
+      {
+        question: "76. At the time of his death, President John Kennedy's civil rights bill\n a. had been passed, much to the satisfaction of African Americans.\nb. had been passed, but greatly weakened by amendments.\nc. was still bogged down in Congress.\nd. was on the desk waiting to be signed into law.\ne. was locked in a filibuster in the U.S. Senate.",
+        answer: "C REF: p. 898"
+      },
+      {
+        question: "77. President Kennedy's alleged assassin was\n a. Jack Ruby.\nb. Lee Harvey Oswald.\nc. Medgar Evers.\nd. James Earl Ray.\ne. an agent of Fidel Castro.",
+        answer: "B REF: p. 898"
+      },
+      {
+        question: "78. Before he became vice president and then president of the United States, Lyndon Johnson had exercised great power as\n a. secretary of defense.\nb. Majority Leader of the U.S. Senate.\nc. a wealthy Texas businessman.\nd. governor of Texas.\ne. Speaker of the House of Representatives.",
+        answer: "B REF: p. 898"
+      },
+      {
+        question: "79. President Johnson proved to be much more successful than President Kennedy at\n a. getting his legislation passed by Congress.\nb. exciting the ideals and spirit of his fellow citizens.\nc. reducing America's overseas commitments.\nd. gaining the admiration and support of the media.\ne. appealing to America's European Allies.",
+        answer: "A REF: p. 898-900"
+      },
+      {
+        question: "80. President Johnson called his package of domestic reform proposals the\n a. Great Crusade.\nb. Fair Deal.\nc. New Frontier.\nd. Johnson Revolution.\ne. Great Society.",
+        answer: "E REF: p. 900"
+      },
+      {
+        question: "81. Besides eliminating segregation and racial discrimination in public facilities and employment, Title VII of the Civil Rights Act of 1964 included a provision that\n a. laid the foundation for busing to achieve integration.\nb. prohibited sexual as well as racial discrimination.\nc. established the principle of affirmative action in college admissions.\nd. protected the rights of Latino immigrants to speak Spanish in schools.\ne. protected gays against discrimination in employment.",
+        answer: "B REF: p. 900"
+      },
+      {
+        question: "82. Opponents of Title VII of the Civil Rights Act calculated that\n a. they had enough votes from senators and congressmen opposed to racial equality to tank the bill.\nb. it would fail because liberals would not be able to support legislation that would end laws that gave women special protections.\nc. it would be derailed by the inclusion of sexual orientation in the new law.\nd. discrimination in hiring would not be eliminated by this law.\ne. None of these",
+        answer: "B REF: p. 900"
+      },
+      {
+        question: "83. The War on Poverty was inspired by\n a. the sickness and dire conditions President Johnson witnessed in the mining regions of Appalachia.\nb. Michael Harrington's book The Other America.\nc. increasing public faith that an affluent nation such as America should be able to end poverty.\nd. None of these\ne. All of these",
+        answer: "E REF: p. 900"
+      },
+      {
+        question: "84. With the passage of the Gulf of Tonkin Resolution\n a. the United States declared war on Vietnam.\nb. Congress handed the president a blank check to use further force in Vietnam.\nc. the military was given the authority to use tactical nuclear weapons.\nd. Congress maintained its war-declaring power.\ne. the goals of American military involvement in Vietnam were clear.",
+        answer: "B REF: p. 901"
+      },
+      {
+        question: "85. Voters supported Lyndon Johnson in the 1964 presidential election because of their\n a. loyalty to the Kennedy legacy.\nb. faith in the Great Society promises.\nc. fear of the Republican nominee, Barry Goldwater.\nd. trust in Johnson's Vietnam policy.\ne. All of these",
+        answer: "E REF: p. 901"
+      },
+      {
+        question: "86. Lyndon Johnson gained strong support for federal aid to education by\n a. making sure that the funds would flow primarily to needy students.\nb. guaranteeing that no aid would be given to Catholic schools.\nc. sidestepping the controversy over parochial schools by channeling aid directly to students.\nd. focusing on improving educational quality rather than racial integration.\ne. directing funds toward higher education only.",
+        answer: "C REF: p. 902"
+      },
+      {
+        question: "87. All of the following programs were created by Lyndon Johnson's administration except\n a. the National Endowments for the Arts and Humanities.\nb. Project Head Start.\nc. the Peace Corps.\nd. Medicare.\ne. the Office of Economic Opportunity.",
+        answer: "C REF: p. 902-903"
+      },
+      {
+        question: "88. In the final analysis, Lyndon Johnson's Great Society programs\n a. did no good at all.\nb. actually increased the poverty rate.\nc. proved that poverty could not be papered over with greenbacks.\nd. won some noteworthy battles in education and health care.\ne. received more money than they could effectively spend.",
+        answer: "D REF: p. 903"
+      },
+      {
+        question: "89. The landmark Civil Rights Act of 1964 accomplished all of the following except\n a. creation of the Equal Employment Opportunity Commission.\nb. prohibiting discrimination based on gender.\nc. banning sexual as well as racial discrimination.\nd. banning racial discrimination in most private facilities open to the public.\ne. requiring affirmative action against discrimination.",
+        answer: "E REF: p. 903"
+      },
+      {
+        question: "90. As a result of the Immigration and Nationality Act of 1965\n a. fewer Asians came to the United States.\nb. the number of immigrants entering the country was reduced.\nc. the racial and ethnic makeup of the country was unchanged.\nd. sources of immigration tilted to Eastern Europe.\ne. sources of immigration shifted to Latin America and Asia.",
+        answer: "E REF: p. 902"
+      },
+      {
+        question: "91. The common use of poll taxes to inhibit black voters in the South was outlawed by the\n a. Civil Rights Act of 1964.\nb. Voting Rights Act of 1965.\nc. Twenty-Fourth Amendment.\nd. War on Poverty.\ne. Twenty-Fifth Amendment.",
+        answer: "C REF: p. 903"
+      },
+      {
+        question: "92. After the passage of the Civil Rights Act in 1964, the chief goal of the black civil rights movement in the South became to\n a. secure the right to vote.\nb. end discrimination in housing.\nc. gain equality in education.\nd. prohibit racial discrimination in employment.\ne. integrate private social clubs and organizations.",
+        answer: "A REF: p. 903"
+      },
+      {
+        question: "93. As a result of the Voting Rights Act of 1965\n a. whites left the South in record numbers.\nb. centuries of discrimination and oppression ended.\nc. whites refused to do business with blacks.\nd. white southerners began to court black votes.\ne. the South became strongly Democratic.",
+        answer: "D REF: p. 903-904"
+      },
+      {
+        question: "94. The Watts riot in 1965 symbolized\n a. the still-troubled racial situation in the South.\nb. the rise of the Black Muslim movement in Los Angeles.\nc. a more militant and confrontational phase of the civil rights movement.\nd. the power of Martin Luther King in the black community.\ne. the ineffectiveness of the Voting Rights Act.",
+        answer: "C REF: p. 904"
+      },
+      {
+        question: "95. The militant African American leader who most directly challenged Martin Luther King, Jr.'s goal of peaceful integration was\n a. Medgar Evers.\nb. Malcolm X.\nc. Fannie Lou Hamer.\nd. Marcus Garvey.\ne. Ralph Abernathy.",
+        answer: "B REF: p. 904"
+      },
+      {
+        question: "96. By the late 1960s, Black Power advocates in the North focused their attention primarily on\n a. housing.\nb. school integration.\nc. voting rights.\nd. black separation.\ne. economic demands.",
+        answer: "E REF: p. 905"
+      },
+      {
+        question: "97. Some advocates of Black Power made the movement the basis for\n a. emphasizing African American distinctiveness and separatism.\nb. upholding the leadership of Martin Luther King, Jr.\nc. supporting a movement \"back to Africa.\"\nd. encouraging the end of racially based identity and culture.\ne. promoting affirmative action in education and employment.",
+        answer: "A REF: p. 904-905"
+      },
+      {
+        question: "98. By 1972, public schools in the South were\n a. integrated at higher rates than schools in the North.\nb. integrated at lower rates than schools in the North.\nc. taught primarily by teachers trained in northern colleges.\nd. continuing to close their doors rather than admit blacks to all-white schools.\ne. the final hold-outs against efforts at racial equality.",
+        answer: "A REF: p. 905"
+      },
+      {
+        question: "99. The Latin American nation where Lyndon Johnson sent 25,000 American troops to counteract alleged communist influence was\n a. Argentina.\nb. El Salvador.\nc. the Dominican Republic.\nd. Panama.\ne. Mexico.",
+        answer: "C REF: p. 906"
+      },
+      {
+        question: "100. Aerial bombardment in Vietnam\n a. worked very well.\nb. strengthened the communists' will to resist.\nc. strengthened the will of America's South Vietnamese allies to fight.\nd. had no effect on the war.\ne. destroyed North Vietnamese industry.",
+        answer: "B REF: p. 906"
+      },
+      {
+        question: "101. The 1967 Six-Day War intensified the Arab-Israeli conflict by bringing into constant, direct conflict\n a. Americans and Israelis.\nb. Israel and Saudi Arabia.\nc. Israel and the United States on the one hand and the Arabs and the Soviet Union on the other.\nd. the Israeli government and Jewish settlers on the West Bank.\ne. Israelis and Palestinians.",
+        answer: "E REF: p. 907"
+      },
+      {
+        question: "102. The focal point of congressional opposition to Lyndon Johnson's Vietnam War policy was\n a. the Republican party in both the Senate and the House.\nb. the Senate office of Vice President Hubert Humphrey.\nc. Senator Richard Russell's Armed Services Committee.\nd. the House Ways and Means Committee.\ne. Senator William Fulbright's Foreign Relations Committee.",
+        answer: "E REF: p. 907"
+      },
+      {
+        question: "103. The most serious blow to Lyndon Johnson's Vietnam policy\n a. came with the bombing of Cambodia.\nb. occurred when Defense Secretary Robert McNamara resigned.\nc. was the Tet offensive of 1968.\nd. occurred when Senator J. William Fulbright's Foreign Relations Committee held public hearings on the war.\ne. came with the revelation that the Tonkin Gulf attacks had been provoked by the United States.",
+        answer: "C REF: p. 908"
+      },
+      {
+        question: "104. During the Vietnam War, President Lyndon Johnson ordered the CIA, in clear violation of its charter, to\n a. lead an invasion of Cambodia.\nb. spy on domestic antiwar protestors.\nc. infiltrate FBI headquarters.\nd. help destabilize the government of Thailand.\ne. protect prowar presidential candidates.",
+        answer: "B REF: p. 907"
+      },
+      {
+        question: "105. The political challenge to President Johnson's Vietnam policies gained great momentum when\n a. the Senate voted to cut off funds for any further escalation of the war.\nb. the favorite for the Republican nomination, Richard Nixon, began opposing the war.\nc. third-party challenger George Wallace began criticizing Johnson.\nd. Vice President Hubert Humphrey turned against Johnson's policies.\ne. Senator Eugene McCarthy nearly defeated Johnson in the New Hampshire Democratic primary.",
+        answer: "E REF: p. 908"
+      },
+      {
+        question: "106. The attempt to nominate an antiwar Democratic candidate for president in 1968 suffered a crippling blow when\n a. Senator Eugene McCarthy withdrew from the race before the Democratic convention.\nb. Senator Robert Kennedy was assassinated after winning the California primary.\nc. pro-war vice president Hubert Humphrey won the Oregon and California primaries.\nd. militant leftist demonstrators at the Chicago convention caused a backlash in favor of Humphrey.\ne. public opinion turned back in favor of the war after the Tet offensive.",
+        answer: "B REF: p. 909"
+      },
+      {
+        question: "107. The 1968 Democratic party convention witnessed\n a. a long deadlock over the nomination of its presidential candidate.\nb. a violent conflict between police and antiwar demonstrators outside the convention hall.\nc. a walkout by hundreds of southern delegates, who then founded the Independent party.\nd. the assassination of Robert F. Kennedy soon after he delivered a speech at the convention.\ne. the enthusiastic nomination of Vice President Humphrey.",
+        answer: "B REF: p. 909"
+      },
+      {
+        question: "108. The spoiler third-party candidate for president in 1968 was\n a. Robert F. Kennedy.\nb. Hubert H. Humphrey.\nc. Eugene McCarthy.\nd. George Wallace.\ne. George McGovern.",
+        answer: "D REF: p. 909"
+      },
+      {
+        question: "109. Both major-party presidential candidates in 1968 agreed that the United States should\n a. negotiate an immediate end to the Vietnam War.\nb. withdraw U.S. troops to safe enclaves.\nc. withdraw American forces from Vietnam.\nd. escalate the bombing of North Vietnam.\ne. continue the war in pursuit of an honorable peace.",
+        answer: "E REF: p. 909"
+      },
+      {
+        question: "110. Former vice president Richard Nixon essentially won the 1968 presidential election by\n a. promising to escalate the Vietnam War and win a decisive victory there.\nb. repudiating Goldwater conservatives and running as a liberal Republican.\nc. re-asserting the Republican party's historic commitment to civil rights and civil liberties.\nd. arguing that the Vietnam War had been a mistake from the beginning.\ne. exploiting Democratic divisions and appealing to moderately conservative law and order sentiment.",
+        answer: "E REF: p. 910"
+      },
+      {
+        question: "111. In the worldwide youthful protests of 1968, the movement in ____ succeeded in toppling the government, while the movement in ____ ended in harsh repression and failure.\na. the United States; France\nb. Poland; France\nc. Germany; Britain\nd. France; Czechoslovakia\ne. Japan; the United States",
+        answer: "D REF: p. 911-912"
+      },
+      {
+        question: "112. The skepticism about authority that emerged in the United States during the 1960s\n a. was a new phenomenon for America.\nb. did not occur anywhere else in the world at that time.\nc. touched all institutions except religion.\nd. had deep historical roots in American culture.\ne. arose from the music and drugs of the time.",
+        answer: "D REF: p. 911"
+      },
+      {
+        question: "113. The three P's that largely explain the cultural upheavals of the 1960s are\n a. poverty, political radicalism, and protest against authority.\nb. public schools, parietal rules, and parental restrictions.\nc. population bulge, protest against Vietnam, and prosperity.\nd. patriotism, prowar enthusiasm, and perfectionism.\ne. the pill, pot, and popular rock music.",
+        answer: "C REF: p. 913"
+      },
+      {
+        question: "114. The site of the first major militant protest on behalf of gay liberation in 1969 was\n a. the Mattachine Society headquarters (Los Angeles).\nb. Fire Island, New York.\nc. Key West, Florida.\nd. Indiana University (Bloomington, Indiana).\ne. the Stonewall Inn (New York City).",
+        answer: "E REF: p. 913"
+      },
+      {
+        question: "57. One reason for the end of the postwar economic boom in the 1970s was\n a. the entry of large numbers of women in the workforce.\nb. the Arab oil embargo.\nc. a decline in technological innovation.\nd. a lack of government safety and health regulations.\ne. a drastic decline in worker productivity.",
+        answer: "E REF: p. 916"
+      },
+      {
+        question: "58. Although the median income of American families stagnated from 1970s to 1990, the reason it didn't decline was\n a. people logged more hours.\nb. people were paid at a higher rate.\nc. wives' wages maintained the family income.\nd. people had fewer children.\ne. All of these",
+        answer: "C REF: p. 916"
+      },
+      {
+        question: "59. Lyndon Johnson's insistence on fighting the Vietnam War and funding the Great Society without a tax increase to pay for them led to\n a. a drastic inflation of prices in the 1970s.\nb. a decline in the competitive advantage of American business.\nc. severe cutbacks in the size of the federal government.\nd. a taxpayer revolt.\ne. a growing reliance on overseas trade to sustain the American economy.",
+        answer: "A REF: p. 917"
+      },
+      {
+        question: "60. The poor economic performance of the 1970s brought an abrupt end to\n a. American reliance on Middle Eastern oil.\nb. the Social Security and Medicare programs for the elderly.\nc. the increases in military spending of the 1960s.\nd. the liberal dream that affluent Americans could spend their way to social justice.\ne. reliance on the dollar as a stable international currency.",
+        answer: "D REF: p. 917"
+      },
+      {
+        question: "61. The Nixon Doctrine proclaimed that\n a. America's Asian allies would have to fight their wars without large numbers of American troops.\nb. the United States would supply only economic aid to its allies.\nc. the United States would make détente with the Soviet Union and the People's Republic of China its highest diplomatic priority.\nd. all American allies must commit troops to fight communism if necessary.\ne. the United States would maintain naval and air bases in East Asia but not send ground troops to fight on the Asian mainland.",
+        answer: "A REF: p. 917"
+      },
+      {
+        question: "62. Despite his political skills and foreign policy knowledge, Richard Nixon harbored deep and bitter resentments against\n a. the conservative, Goldwater wing of the Republican party.\nb. women whom he blamed for undermining traditional conservative values.\nc. the Communist great powers, China and the Soviet Union, which threatened America.\nd. the Catholic Church that he believed looked down on his own Quaker religion.\ne. the liberal establishment that had fought him throughout his career.",
+        answer: "E REF: p. 917"
+      },
+      {
+        question: "63. Perhaps Richard Nixon's most valuable asset as he began his presidency in 1969 was his\n a. naturally conciliatory manner.\nb. inclination to try to work openly with antiwar liberals to halt the Vietnam War.\nc. close connection with former President Eisenhower.\nd. clear mandate from the public as a result of his 1968 election victory.\ne. expertise in foreign affairs.",
+        answer: "E REF: p. 917"
+      },
+      {
+        question: "64. President Nixon's policy of Vietnamization of the war in Vietnam called for\n a. a gradual handover of the ground war to the South Vietnamese.\nb. a full-scale conventional invasion of North Vietnam.\nc. reorganization of the American army in Vietnam into antiguerrilla units.\nd. an end to all American military and economic aid to South Vietnam.\ne. a de-emphasis on military assaults in favor of Vietnamese social reform.",
+        answer: "A REF: p. 917"
+      },
+      {
+        question: "65. Richard Nixon's Vietnam policy included all of the following except\n a. Vietnamization.\nb. extension of the war to Cambodia.\nc. massive bombing campaigns in Vietnam.\nd. increased American troop commitments.\ne. creating a draft lottery and reducing draft calls.",
+        answer: "D REF: p. 917 | p. 918 | p. 923 | p. 924"
+      },
+      {
+        question: "66. The American armed forces in Vietnam were composed largely of\n a. marines.\nb. African Americans.\nc. soldiers in their middle and late twenties.\nd. the least privileged young Americans.\ne. professional career soldiers.",
+        answer: "D REF: p. 918"
+      },
+      {
+        question: "67. In 1971, a group of Vietnam War veterans in the U.S.\na. tossed their medals in front of the Capital building to protest against the war.\nb. fought the antiwar movement with a demonstration on behalf of U.S. soldiers.\nc. protested the lack of medical care and benefits for returning soldiers.\nd. encouraged young men in Times Square, NY, to enlist in the U.S. military.\ne. supported expanded roles for women in the military.",
+        answer: "A REF: p. 918"
+      },
+      {
+        question: "68. President Nixon's 1970 invasion of Cambodia led to\n a. a successful suppression of Viet Cong gains in South Vietnam.\nb. congressional approval for an expanded war effort.\nc. a growing threat from China to enter the war on the side of North Vietnam.\nd. dramatic new waves of bitter domestic protest against the war.\ne. an end to the secret American bombing campaign against Cambodia.",
+        answer: "D REF: p. 919"
+      },
+      {
+        question: "69. The ____ Amendment ____ the voting age to ____.\na. Twenty-Sixth; raised; twenty-one\nb. Twenty-Fourth; lowered; eighteen\nc. Twenty-Fifth; raised; nineteen\nd. Twenty-Sixth; lowered; eighteen\ne. Twenty-Sixth; lowered; sixteen",
+        answer: "D REF: p. 919"
+      },
+      {
+        question: "70. The top-secret Pentagon Papers, leaked and published in 1971\n a. revealed President Nixon's role in the Watergate scandal.\nb. documented the North Vietnamese attack in the Gulf of Tonkin.\nc. exposed President Nixon's secret bombing war of Cambodia.\nd. was the first the American public knew of the Nixon Doctrine.\ne. exposed the deception that had led the United States into the Vietnam War.",
+        answer: "E REF: p. 919"
+      },
+      {
+        question: "71. President Nixon's chief foreign policy adviser, throughout his administration, was\n a. Henry Kissinger.\nb. John Dean III.\nc. Spiro Agnew.\nd. Gerald Ford.\ne. Donald Rumsfeld.",
+        answer: "A REF: p. 919"
+      },
+      {
+        question: "72. Richard Nixon's policy of détente\n a. was designed to improve relations between the Soviet Union and China.\nb. was aimed at ending the division of Germany and Korea.\nc. was a failure.\nd. found support in the Democratic party but not the Republican party.\ne. ushered in an era of relaxed tensions between the United States and the two leading communist powers, China and the Soviet Union.",
+        answer: "E REF: p. 920"
+      },
+      {
+        question: "73. The Nixon administration still reflected a staunch anticommunist policy when it engaged in covert operations to overthrow the elected leftist government of\n a. Cuba.\nb. Mexico.\nc. China.\nd. Chile.\ne. Sweden.",
+        answer: "D REF: p. 920"
+      },
+      {
+        question: "74. In Griswold v. Connecticut, the Supreme Court upheld a married couple's right to use contraceptives based on\n a. the necessary and proper clause of the Constitution.\nb. the First Amendment.\nc. a right to privacy.\nd. Roe v. Wade.\ne. the Fifth Amendment.",
+        answer: "C REF: p. 920-921"
+      },
+      {
+        question: "75. The Supreme Court's Miranda and Escobedo decisions came under sharp attack from many conservatives because they\n a. prohibited any official recognition of religion in public education.\nb. guaranteed the rights of criminal suspects against mistreatment by the police.\nc. overturned laws prohibiting unnatural sexual acts.\nd. upheld laws requiring busing to achieve racial balance in public schools.\ne. upheld laws prohibiting private property owners from polluting rivers and lakes.",
+        answer: "B REF: p. 921"
+      },
+      {
+        question: "76. The Supreme Court, under Chief Justice Earl Warren, outraged religious conservatives in 1962-1963 when it\n a. declared a woman's right to an abortion.\nb. ruled that prayer and Bible reading in public schools violated the First Amendment.\nc. prohibited the display of religious symbols in government buildings.\nd. ruled that parochial students could not ride on public school buses.\ne. declared that the practice of having congressional chaplains was unconstitutional.",
+        answer: "B REF: p. 921"
+      },
+      {
+        question: "77. When it came to welfare programs, Richard Nixon\n a. sought to exclude African Americans.\nb. tried to repeal only food stamps and Medicaid.\nc. did little to reduce the poverty rate.\nd. did his best to do away with Lyndon Johnson's Great Society programs.\ne. supported significant expansion in many areas.",
+        answer: "E REF: p. 921"
+      },
+      {
+        question: "78. Richard Nixon's legislation guaranteeing that Social Security raises would be indexed to guarantee against inflation\n a. enabled the Republican party to gain ownership of the Social Security issue over the Democrats.\nb. was economically supported by an increase in Social Security taxes.\nc. actually contributed to increased inflation in the 1970s.\nd. was an exception to Nixon's general hostility to Social Security.\ne. further demonstrated Nixon's support for the elderly and hostility to younger people.",
+        answer: "C REF: p. 921"
+      },
+      {
+        question: "79. Richard Nixon's Philadelphia Plan\n a. was a direct attack on affirmative action.\nb. aimed at giving direct economic assistance to business.\nc. attempted to counter the Supreme Court's opposition to affirmative action.\nd. required construction trade unions to establish timetables and goals for hiring black apprentices.\ne. aimed to renovate inner cities like those in Philadelphia.",
+        answer: "D REF: p. 921-922"
+      },
+      {
+        question: "80. The difference between Lyndon Johnson's affirmative action programs and those of Richard Nixon was\n a. very small.\nb. that Johnson intended his to help groups and Nixon intended his to help individuals.\nc. that Nixon's actions applied only to educational opportunities and did nothing for employment, while Johnson's helped both.\nd. that Johnson intended to help individuals, but Nixon conferred privileges on groups.\ne. that Johnson established quotas and Nixon ended them.",
+        answer: "D REF: p. 922"
+      },
+      {
+        question: "81. The Environmental Protection Agency and the Occupational Safety and Health Administration aroused bitter opposition among many business people because\n a. they undermined strong efforts that businesses were already making to protect the environment and worker safety.\nb. the agencies were financed by new corporate business taxes.\nc. most business leaders were hostile to improvements in the environment or safety.\nd. they directly involved the federal government in many aspects of business decision making.\ne. they operated under laws passed by an antibusiness administration.",
+        answer: "D REF: p. 921-922"
+      },
+      {
+        question: "82. All of the following were created during Richard Nixon's presidency except\n a. the Environmental Protection Agency.\nb. Supplemental Security Income for the blind, disabled, and indigent aged.\nc. the Endangered Species Act.\nd. the Occupational Health and Safety Administration.\ne. the Medicare program.",
+        answer: "E REF: p. 921-922"
+      },
+      {
+        question: "83. To control creeping inflation in the early 1970s, President Richard Nixon\n a. imposed a ninety-day wage and price freeze.\nb. put the United States back on the gold standard.\nc. sought a system of international currency stabilization.\nd. lowered Social Security payments.\ne. pressured the Federal Reserve Board to raise interest rates.",
+        answer: "A REF: p. 922"
+      },
+      {
+        question: "84. Richard Nixon's southern strategy included the policy of\n a. completely overhauling the welfare system.\nb. ending the Vietnam War.\nc. moving nearly all military bases to the southern states.\nd. appointing only southerners to the Supreme Court.\ne. soft-pedaling civil rights and opposing school busing to achieve racial balance.",
+        answer: "E REF: p. 922"
+      },
+      {
+        question: "85. George McGovern, the Democratic nominee for the presidency in 1972, alienated the traditional working-class backbone of the Democratic party\n a. by advocating a cut in Social Security.\nb. when he advocated an end to the Vietnam War.\nc. when it was discovered that he had undergone psychiatric care.\nd. by appealing to racial minorities, feminists, and youth.\ne. by opposing the power of labor unions.",
+        answer: "D REF: p. 923"
+      },
+      {
+        question: "86. The shaky agreement that brought an end to American fighting in Vietnam in January 1973 represented\n a. a thinly disguised American retreat.\nb. an end to warfare in Vietnam.\nc. the establishment of a unified, neutral Vietnam.\nd. the achievement of the essential American goals in the war.\ne. a vote of confidence in the South Vietnamese government's ability to defeat the communists.",
+        answer: "A REF: p. 923-924"
+      },
+      {
+        question: "87. As part of the cease-fire agreement in Vietnam in 1973\n a. the United States ended the bombing of Cambodia.\nb. the United States stopped all economic and military aid to South Vietnam.\nc. North Vietnam withdrew all its troops from South Vietnam.\nd. the Viet Cong joined a coalition government in South Vietnam.\ne. the United States withdrew all its troops from Vietnam.",
+        answer: "E REF: p. 923"
+      },
+      {
+        question: "88. In 1973, the American public was shocked to learn that\n a. some American soldiers had committed massacres in Vietnam.\nb. the Vietnamese peace agreement would not last.\nc. the U.S. Air Force had been secretly bombing Cambodia since 1969.\nd. President Nixon had prepared plans to invade North Vietnam.\ne. the United States was threatening to use nuclear weapons in Vietnam and Cambodia.",
+        answer: "C REF: p. 924"
+      },
+      {
+        question: "89. In response to Congress's attempt to stop him from continuing the bombing of Cambodia, President Nixon\n a. began using secret agents to intimidate members of Congress.\nb. gradually reduced the number of bombing raids.\nc. shifted the bombing campaign to Laos.\nd. declared that he was stopping the bombing but continued the campaign secretly.\ne. repeatedly vetoed Congress's bills to halt the attacks.",
+        answer: "E REF: p. 924"
+      },
+      {
+        question: "90. The 1973 War Powers Act\n a. gave the president the power to commit troops without declaring war.\nb. compelled President Nixon to end the secret bombing war in Cambodia.\nc. required presidential reporting and congressional approval of extended troop commitments.\nd. ended the military draft and created an all-volunteer army.\ne. required Congress to approve funds for military operations.",
+        answer: "C REF: p. 924"
+      },
+      {
+        question: "91. As a result of U.S. support for Israel in 1973, when it was attacked by Egypt and Syria\n a. Israel took control of Syria.\nb. America had to reduce its aid to other nations.\nc. Arab nations placed an embargo on oil to America.\nd. the Soviet Union started sending arms to Syria.\ne. Israel was able to seize the Suez Canal.",
+        answer: "C REF: p. 924"
+      },
+      {
+        question: "92. America's strong support for Israel in the 1973 Arab-Israeli War led to\n a. a vigorous effort to end America's reliance on imported oil.\nb. considerably lower energy prices for European countries that had remained neutral in the war.\nc. an increasing alliance between Arab nations and the Soviet Union.\nd. America's growing reliance on Iran as its major source of Middle Eastern oil.\ne. an OPEC oil boycott of the United States and a subsequent energy crisis and recession.",
+        answer: "E REF: p. 924-925"
+      },
+      {
+        question: "93. The list of Nixon illegal administration activities uncovered in the Watergate scandal included all of the following except\n a. breaking into the Democratic party headquarters in order to bug them.\nb. paying Supreme Court justices to write favorable opinions.\nc. using the Internal Revenue Service to harass its enemies.\nd. forging documents to discredit Democrats.\ne. using the FBI and CIA to cover up previous crimes.",
+        answer: "B REF: p. 925"
+      },
+      {
+        question: "94. Richard Nixon tried to resist giving his taped conversations to the special prosecutor and the Congress by claiming that\n a. portions of the tape were erased.\nb. they were his private property.\nc. he had executive privilege (confidentiality).\nd. they were inaudible.\ne. it would violate his right to privacy.",
+        answer: "C REF: p. 926"
+      },
+      {
+        question: "95. Congressman Gerald Ford had become vice president of the United States when\n a. Nelson Rockefeller resigned the vice presidency to become governor of New York.\nb. Spiro Agnew resigned on corruption charges and Nixon appointed Ford under the Twenty-Fifth Amendment.\nc. he was selected to replace Spiro Agnew as Nixon's vice president in the 1972 campaign.\nd. Nixon was impeached and Congress needed to select a new president.\ne. the Twenty-Fifth Amendment made the Speaker of the House vice president in case of potential impeachment.",
+        answer: "B REF: p. 925-926"
+      },
+      {
+        question: "96. The most controversial action of Gerald Ford's presidency was\n a. signing the Helsinki accords with the Soviet Union.\nb. frantically evacuating the last Americans and Vietnamese by helicopter during the fall of South Vietnam to the communists.\nc. arranging the deal whereby Nixon resigned the president.\nd. pardoning Nixon for any known or unknown crimes he had committed while president.\ne. pardoning Vietnam War draft resisters and evaders.",
+        answer: "D REF: p. 928"
+      },
+      {
+        question: "97. The Helsinki accords, signed by Gerald Ford and leaders of thirty-four other nations,\na. legitimated Soviet-dictated boundaries in Eastern Europe, while spawning human rights efforts there.\nb. rejected the Soviet-directed boundary of Poland.\nc. proved to many Americans that détente was still a two-way street.\nd. was condemned by West Germany as meaningless.\ne. were strongly opposed by the new Polish pope, John Paul II.",
+        answer: "A REF: p. 928"
+      },
+      {
+        question: "98. The people of the United States had provided just about everything for South Vietnam except\n a. the most sophisticated aircraft.\nb. hundreds of thousands of U.S. troops.\nc. enough time to win.\nd. enough money to build its own military.\ne. the will to win the war.",
+        answer: "E REF: p. 929 | p. 930"
+      },
+      {
+        question: "99. When the North Vietnamese launched a full-scale invasion of South Vietnam in 1975,\n a. the United States provided even more military aid to South Vietnam.\nb. the Chinese intervened to seek a neutral settlement.\nc. the United States renewed bombing against North Vietnam.\nd. all the South Vietnamese who supported the United States were trapped inside the country.\ne. the South Vietnamese government quickly collapsed.",
+        answer: "E REF: p. 928"
+      },
+      {
+        question: "100. While most of the social movements born in the 1960s declined or disappeared, one that continued and gained even greater momentum in the 1970s was the\n a. counterculture movement.\nb. peace movement.\nc. feminist movement.\nd. civil rights movement.\ne. antipoverty movement.",
+        answer: "C REF: p. 929"
+      },
+      {
+        question: "101. Title IX was passed by Congress in 1972 to\n a. prohibit sex discrimination in any federally funded education program or activity.\nb. guarantee women equal pay for equal work.\nc. prohibit any form of sexual harassment or sexual innuendoes on the job.\nd. establish quotas for women in sports, business, and government positions.\ne. protect women's access to birth control and abortion.",
+        answer: "A REF: p. 930"
+      },
+      {
+        question: "102. The proposed Equal Rights Amendment (ERA), passed by Congress in 1972 and eventually ratified by 35 states, stated the following:\na. \"Congress shall pass no law restricting the equal right of privacy in marital relations or reproduction.\"\nb. \"The equal rights of unborn citizens of the United States under the Fourteenth Amendment shall not be abridged.\"\nc. \"Equal access to the courts of the United States and any state shall not be abridged on account of race, gender, or physical handicap.\"\nd. \"Equality of rights under the law shall not be denied or abridged by the United States or any state on the basis of sex.\"\ne. \"Nothing in this Constitution shall be construed by the courts or any state to prohibit the guarantee of equal pay for equal work to women.\"",
+        answer: "D REF: p. 931"
+      },
+      {
+        question: "103. The \"boat people\" were\n a. Vietnamese immigrants who fled to the U.S. immediately after the fall of Saigon.\nb. Cuban refugees who fled communism and landed in Florida.\nc. a second wave of Vietnamese people who sought to escape oppressive communist regimes for freedom.\nd. Cambodians who came to the U.S. seeking a better life after the Vietnam War.\ne. None of these",
+        answer: "C REF: p. 931"
+      },
+      {
+        question: "104. The Supreme Court case of Roe v. Wade declared state laws prohibiting abortion were unconstitutional because they\n a. violated the First Amendment by using a religious definition of person.\nb. violated the equal protection clause of the Fourteenth Amendment by placing a particular burden on women not placed on men.\nc. wrote into law a particular philosophical and scientific view of human life that imposed unfair treatment on those who disagreed.\nd. violated the Fifth Amendment by interfering with doctors' professional medical practices.\ne. violated a woman's constitutional right to privacy in her own person.",
+        answer: "E REF: p. 932"
+      },
+      {
+        question: "105. The Equal Rights Amendment (ERA) failed to be ratified by the needed 38 states largely because\n a. the Catholic Church opposed it.\nb. many Americans realized that its goals had already been achieved without amending the Constitution.\nc. an antifeminist backlash led by Phyllis Schlafly stirred sufficient opposition to stop it.\nd. many suspected that it would require such things as rigid quotas and unisex bathrooms.\ne. many Americans believed that equal gender treatment was a matter of changing attitudes, not creating laws.",
+        answer: "C REF: p. 932"
+      },
+      {
+        question: "106. As part of the backlash against the women's movement, antifeminists blamed feminists for\n a. rising rates of juvenile delinquency.\nb. escalating divorce rates.\nc. increased teen pregnancy.\nd. rising incidences of violence against women.\ne. changing sexual norms.",
+        answer: "B REF: p. 932"
+      },
+      {
+        question: "107. The most explosive domestic controversy of the 1970s centered around issues of\n a. race.\nb. labor.\nc. the environment.\nd. education.\ne. immigration.",
+        answer: "A REF: p. 932"
+      },
+      {
+        question: "108. The effect of the Supreme Court ruling in Milliken v. Bradley, which held that integration did not have to take place across school district lines, was to\n a. encourage voluntary busing programs.\nb. cause Congress to pass laws equalizing school funding in different districts.\nc. turn public attention to eliminating segregated housing patterns.\nd. reinforce the division between poorer, minority inner city schools and nearly all-white suburbs.\ne. end school busing programs in favor of the neighborhood school.",
+        answer: "D REF: p. 932"
+      },
+      {
+        question: "109. The Supreme Court, in the Bakke case, held that\n a. all forms of affirmative action in college admissions were unconstitutional.\nb. reverse discrimination was just as wrong as antiblack discrimination.\nc. public universities could impose racial quotas but private universities did not have to do so.\nd. it was acceptable for universities to establish minority-based programs and housing arrangements.\ne. racial quotas were unconstitutional but race could be taken into account as one factor in college admissions.",
+        answer: "E REF: p. 932"
+      },
+      {
+        question: "110. American Indian activists brought attention to their cause in the 1970s by seizing\n a. the Little Big Horn battleground and Mount Rushmore in the sacred Black Hills.\nb. Alcatraz Island and Wounded Knee, South Dakota.\nc. the major tribal headquarters throughout Oklahoma.\nd. salmon fishing grounds in Washington and trout streams in Wisconsin and Minnesota.\ne. the Tippecanoe battlefield and Mesa Verde National Park.",
+        answer: "B REF: p. 933"
+      },
+      {
+        question: "111. The first wave of feminism grew out of the ____ movement, and the second wave of feminism grew out of the ____ movement.\na. abolitionist; civil rights\nb. prohibition; black power\nc. peace; environmental\nd. progressive; antiwar\ne. evangelical revival; gay",
+        answer: "A REF: p. 934"
+      },
+      {
+        question: "112. On which of the following issues did most second wave feminists agree?\na. Marriage\nb. How much to expect from the government, capitalism, and men\nc. Pornography\nd. Abortion rights\ne. Maternity leaves and special protections for women in the workplace",
+        answer: "D REF: p. 935"
+      },
+      {
+        question: "113. In 1976, President Gerald Ford won the Republican nomination by defeating a strong challenge from\n a. former California governor Ronald Reagan.\nb. former vice president Spiro Agnew.\nc. Senator Robert Dole.\nd. Congressman George H. W. Bush.\ne. his own vice president Nelson Rockefeller.",
+        answer: "A REF: p. 933"
+      },
+      {
+        question: "114. James Earl (Jimmy) Carter enjoyed considerable popularity when he won the presidency because\n a. his emphasis on honesty contrasted with the corruptions of Watergate.\nb. he was widely known as skilled in dealing with Congress and Washington.\nc. he brought in a team of highly respected and experienced cabinet members and advisers.\nd. he was a born-again Southern Baptist.\ne. he had a clear plan to solve the energy crisis.",
+        answer: "A REF: p. 933"
+      },
+      {
+        question: "115. Jimmy Carter quickly found himself in political trouble because he\n a. emphasized his Southern Baptist beliefs in his public speeches.\nb. seemed to lack fundamental moral and religious values.\nc. proved too ready to compromise with Republicans in Congress.\nd. relied too heavily on a small circle of Georgia advisers.\ne. spent too much time on foreign policy and not enough on the economy.",
+        answer: "D REF: p. 933"
+      },
+      {
+        question: "116. The guiding principle of President Carter's foreign policy was\n a. isolationism.\nb. containment.\nc. détente.\nd. unilateralism.\ne. human rights.",
+        answer: "E REF: p. 933"
+      },
+      {
+        question: "117. President Jimmy Carter's most spectacular foreign-policy achievement was the\n a. Panama Canal Treaty.\nb. Helsinki accords.\nc. Camp David agreement between Israel and Egypt.\nd. SALT II Treaty.\ne. Iran hostage release.",
+        answer: "C REF: p. 933-934"
+      },
+      {
+        question: "118. President Carter believed that the fundamental problem of the American economy in the late 1970s was\n a. the absence of price controls on domestic oil production.\nb. U.S. dependence on foreign oil.\nc. the high import fees on foreign oil.\nd. the exhaustion of domestic oil supplies.\ne. the loss of a manufacturing base.",
+        answer: "B REF: p. 937"
+      },
+      {
+        question: "119. The first major trouble to afflict President Carter's foreign policy was the\n a. Panamanian seizure of the Panama Canal.\nb. collapse of the Camp David accords between Israel and Egypt.\nc. ominous reheating of the Cold War with the Soviet Union.\nd. taking of American hostages in Lebanon.\ne. threatened Chinese invasion of Taiwan.",
+        answer: "C REF: p. 936"
+      },
+      {
+        question: "120. The oil shocks of the 1970s brought home to Americans the stunning fact that\n a. the private automobile was not sustainable as the major mode of transportation.\nb. they would have to invest in new forms of energy.\nc. the United States had run completely out of oil.\nd. the United States would have to become militarily engaged in the Middle East conflicts.\ne. their economy was increasingly dependent on foreign trade and the global economy.",
+        answer: "E REF: p. 936"
+      },
+      {
+        question: "121. The SALT II Treaty between the Soviet Union and the United States died in the Senate when the Soviets\n a. refused to sign the Helsinki accords.\nb. cracked down on Soviet dissidents.\nc. halted the immigration of Soviet Jews to Israel.\nd. helped Muslim fundamentalists to overthrow the shah of Iran.\ne. invaded Afghanistan.",
+        answer: "E REF: p. 938"
+      },
+      {
+        question: "122. President Carter's malaise speech was notable for\n a. demonstrating his close ties to the American people and the mood of the country.\nb. predicting the economic downturn of the 1970s.\nc. forecasting the future problems the nation would face if it did not address its dependency on foreign oil.\nd. chiding Americans for falling into a moral and spiritual crisis in their quest to acquire material goods.\ne. inspiring Americans to become more involved in their communities and local government.",
+        answer: "D REF: p. 938"
+      },
+      {
+        question: "123. The most humiliating failure during the Iran hostage crisis came when\n a. the militant Muslim Ayatollah Khomeini overthrew the Shah of Iran.\nb. America's allies refused to condemn the hostage takeover.\nc. President Carter's attempted mission to rescue the hostages ended in disaster.\nd. some of the U.S. hostages took the side of their Iranian captors.\ne. the Iranians demonstrated their ability to drive up American oil prices.",
+        answer: "C REF: p. 939"
+      }
+    ];
+
+    const container = document.getElementById('flashcardContainer');
+
+    flashcards.forEach(card => {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'flashcard';
+      cardDiv.innerHTML = `
+        <div class="flashcard-inner">
+          <div class="flashcard-face flashcard-front">
+            ${card.question}
+          </div>
+          <div class="flashcard-face flashcard-back">
+            ${card.answer}
+          </div>
+        </div>
+      `;
+      cardDiv.addEventListener('click', () => {
+        cardDiv.classList.toggle('flipped');
+      });
+      container.appendChild(cardDiv);
+    });
+  </script>
+</body>
+</html>
