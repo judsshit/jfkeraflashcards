@@ -808,6 +808,14 @@
       });
       container.appendChild(cardDiv);
     });
+
+    // Adjust each flashcard's height so its two faces don’t overlap.
+    document.querySelectorAll('.flashcard').forEach(card => {
+      const front = card.querySelector('.flashcard-front');
+      const back = card.querySelector('.flashcard-back');
+      const maxHeight = Math.max(front.offsetHeight, back.offsetHeight);
+      card.style.height = maxHeight + 'px';
+    });
   </script>
 </body>
 </html>
